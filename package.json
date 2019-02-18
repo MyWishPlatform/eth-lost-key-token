@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "compile" : "./scripts/compile.sh",
     "tronbox-compile": "tronbox compile",
     "truffle-compile": "truffle compile",
     "tronbox-migrate": "tronbox migrate",
@@ -14,6 +15,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "c-preprocessor": "^0.2.12",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",

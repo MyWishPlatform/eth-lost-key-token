@@ -18,14 +18,6 @@ contract LostKeyNotify is LostKey {
    */
   event Notified();
 
-  constructor(address _owner, address[] _recipients, uint[] _percents, uint32 _noActivityPeriod)
-    public
-    LostKey(_owner, _recipients, _percents)
-  {
-    noActivityPeriod = _noActivityPeriod;
-    lastActiveTs = uint64(block.timestamp);
-  }
-
   function imAvailable() public onlyTarget notTriggered onlyAlive {
     lastActiveTs = uint64(block.timestamp);
     emit Notified();
