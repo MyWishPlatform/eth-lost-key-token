@@ -1,0 +1,32 @@
+{
+  "name": "tron-lost-key-token",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "tronbox-compile": "tronbox compile",
+    "truffle-compile": "truffle compile",
+    "tronbox-migrate": "tronbox migrate",
+    "truffle-migrate": "truffle migrate",
+    "tronbox-test": "tronbox test",
+    "truffle-test": "truffle test",
+    "prettier": "prettier --write * **/*",
+    "build": "sol-merger \"./contracts/LostKey.sol\" ./build/dist"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^3.0.0",
+    "ganache-core": "^2.4.0",
+    "openzeppelin-test-helpers": "^0.1.2",
+    "prettier": "^1.16.4",
+    "prettier-plugin-solidity": "^1.0.0-alpha.18",
+    "sol-merger": "^0.1.3",
+    "tronbox": "^2.3.13",
+    "truffle": "^5.0.4"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "1.10.0",
+    "sc-library": "github:MyWishPlatform/sc-library#0.7.1"
+  }
+}
