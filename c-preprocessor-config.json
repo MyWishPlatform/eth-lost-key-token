@@ -1,7 +1,7 @@
 {
   "constants": {
-    "D_TARGET": "0x8ffff2c69f000c790809f6b8f9abfcbaab46b322",
-    "D_HEIRS": "address(0x9b37d7b266a41ef130c4625850c8484cf928000d),address(0x8ffff2c69f000c790809f6b8f9abfcbaab46b322)",
+    "D_TARGET": "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
+    "D_HEIRS": "address(0xf17f52151EbEF6C7334FAD080c5704D77216b732),address(0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef)",
     "D_PERCENTS": "uint(30),uint(70)",
     "D_PERIOD_SECONDS": "120"
   }

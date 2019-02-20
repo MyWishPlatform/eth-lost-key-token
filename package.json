@@ -10,6 +10,7 @@
     "truffle-migrate": "truffle migrate",
     "tronbox-test": "tronbox test",
     "truffle-test": "truffle test",
+    "test": "./scripts/test.sh",
     "prettier": "prettier --write * **/*",
     "build": "sol-merger \"./contracts/LostKey.sol\" ./build/dist"
   },

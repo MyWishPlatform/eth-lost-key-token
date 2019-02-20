@@ -4,3 +4,4 @@ build
 .env
 *.log
 contracts/LostKeyMain.sol
+test/LostKeyMain.test.js
