@@ -4,8 +4,8 @@ import "./LostKeyNotify.sol";
 
 contract LostKeyMain is LostKeyNotify {
   constructor() public SoftDestruct(D_TARGET) {
-    address[2] memory _recipients = [D_HEIRS];
-    uint[2] memory _percents = [D_PERCENTS];
+    address[D_HEIRS_COUNT] memory _recipients = [D_HEIRS];
+    uint[D_HEIRS_COUNT] memory _percents = [D_PERCENTS];
 
     require(_recipients.length == _percents.length, "The number of recipients must be equal to the number of percent");
     percents.length = _recipients.length;
