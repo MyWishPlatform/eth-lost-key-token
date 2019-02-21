@@ -31,6 +31,8 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
 
   event TokensSent(address indexed token, address indexed recipient, uint amount, uint percent);
 
+  event TokenAdded(address indexed token);
+
   function() public payable {
     require(false, "Fallback function not allowed");
   }
@@ -78,6 +80,7 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
     require(_contract != address(0));
     //    require(!internalIsTokenAddressAlreadyInList(_contract));
     tokenAddresses.push(_contract);
+    emit TokenAdded(_contract);
   }
 
   function isTokenInList(address _tokenContract) public view returns (bool) {
