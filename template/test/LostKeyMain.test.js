@@ -22,10 +22,7 @@ function createTokensArray(count) {
 }
 
 const LostKey = artifacts.require("LostKeyMain");
-const ERC20 = artifacts.require("ERC20");
 const TestToken = artifacts.require("TestToken");
-
-const MINUTE = 60;
 
 const extractAddress = string => string.match(/\((0x\w+)\)/)[1];
 const extractBN = string => new BN(string.match(/\((\d+)\)/)[1]);
@@ -127,14 +124,6 @@ contract("LostKeyMain", accounts => {
     }
   });
 
-  // i am alive?
-
-  // change lastTxActive after iamalive
-  // check не срабатывает если не прошло еще достаточно времени
-  // чек сработает если был вызван i am alive и прошло время
-  // чек не сработает если был вызван i am alive и после этого время еще не прошло
-  // чек не сработает если он уже сработал
-
   it("#6 fallback function should revert", async () => {
     const contract = await LostKey.new();
     await shouldFail.reverting(contract.sendTransaction({ value: ether("1") }));
@@ -165,7 +154,6 @@ contract("LostKeyMain", accounts => {
     const contract = await LostKey.new();
     await contract.addTokenAddresses(tokens.map(t => t.address));
 
-    const heirsCount = HEIRS_COUNT;
     const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
 
     for (let i = 0; i < tokens.length; i++) {
@@ -173,55 +161,46 @@ contract("LostKeyMain", accounts => {
       await tokens[i].approve(contract.address, amount);
     }
 
-    const { logs } = contract.check();
-    console.info(logs)
-    // for (let i = 0; i < logs.length; i++) {
-    //
-    // }
+    const { logs } = await contract.check();
+    for (let i = 0; i < logs.length; i++) {
+      logs[i].event.should.not.be.equal("Triggered");
+    }
 
-    // const { logs } = await contract.imAvailable();
-    // expectEvent.inLogs(logs, "Notified");
+    await time.increase(PERIOD_SECONDS.add(new BN(1)));
+    const tx = await contract.imAvailable();
+    (await contract.lastActiveTs()).should.be.bignumber.equal(await time.latest());
+    expectEvent.inLogs(tx.logs, "Notified");
   });
 
-  // it("test fallback with service", async () => {
-  //   contract = await LastWillNotify.new(accounts[1], [accounts[3], accounts[4]], [25, 75], 120, true);
-  //   let time = await contract.lastActiveTs();
-  //   await increaseTime(HOUR);
-  //   await contract.sendTransaction({ value: "20", from: SOMEDUDE });
-  //   assert.equal((await contract.lastActiveTs()).toString(), time.toString());
-  //   await increaseTime(HOUR);
-  //   await contract.sendTransaction({ value: "40", from: OWNER });
-  //   time = await getTime();
-  //   assert.equal((await contract.lastActiveTs()).toString(), time.toString());
-  //   await increaseTime(HOUR);
-  //   await contract.sendTransaction({ value: "40", from: TARGET });
-  //   time = await getTime();
-  //   assert.equal((await contract.lastActiveTs()).toString(), time.toString());
-  // });
-  //
-  // it("test check with service", async () => {
-  //   let balances = [await getBalance(accounts[3]), await getBalance(accounts[4])];
-  //   await increaseTime(MINUTE);
-  //   let checkFail = false;
-  //   try {
-  //     await contract.check({ from: SOMEDUDE });
-  //   } catch (e) {
-  //     checkFail = true;
-  //   }
-  //   assert.equal(checkFail, true);
-  //   checkFail = false;
-  //   try {
-  //     await contract.check({ from: TARGET });
-  //   } catch (e) {
-  //     checkFail = true;
-  //   }
-  //   assert.equal(checkFail, true);
-  //   await contract.check({ from: OWNER });
-  //   assert.equal((await getBalance(accounts[3])).toString(), balances[0].toString());
-  //   assert.equal((await getBalance(accounts[4])).toString(), balances[1].toString());
-  //   await increaseTime(HOUR / 2);
-  //   await contract.check({ from: OWNER });
-  //   assert.equal((await getBalance(accounts[3])).toString(), balances[0].add(25).toString());
-  //   assert.equal((await getBalance(accounts[4])).toString(), balances[1].add(75).toString());
-  // });
+  it("#9 check after i am alive", async () => {
+    const tokens = await createTokensArray(2);
+    const contract = await LostKey.new();
+    await contract.addTokenAddresses(tokens.map(t => t.address));
+
+    const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
+
+    for (let i = 0; i < tokens.length; i++) {
+      await tokens[i].mint(TARGET, amount);
+      await tokens[i].approve(contract.address, amount);
+    }
+
+    const { logs } = await contract.check();
+    for (let i = 0; i < logs.length; i++) {
+      logs[i].event.should.not.be.equal("Triggered");
+    }
+
+    await time.increase(PERIOD_SECONDS.add(new BN(1)));
+    await contract.imAvailable();
+
+    let tx = await contract.check();
+    for (let i = 0; i < tx.logs.length; i++) {
+      tx.logs[i].event.should.not.be.equal("Triggered");
+    }
+
+    await time.increase(PERIOD_SECONDS.add(new BN(1)));
+    tx = await contract.check();
+    expectEvent.inLogs(tx.logs, "Triggered");
+
+    await shouldFail.reverting(contract.check());
+  });
 });
