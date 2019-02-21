@@ -19,7 +19,7 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
   /**
    * Addresses of token contracts
    */
-  address[] public tokenAddresses;
+  address[] private tokenAddresses;
 
   /**
    * Recipient addresses and corresponding % of funds.
@@ -61,7 +61,7 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
    *
    * @param _contracts Token contracts list to add.
    */
-  function addTokenAddresses(address[] _contracts) external onlyTarget notTriggered {
+  function addTokenAddresses(address[] _contracts) external onlyTarget notTriggered onlyAlive {
     for (uint i = 0; i < _contracts.length; i++) {
       _addTokenAddress(_contracts[i]);
     }
@@ -72,7 +72,7 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
    *
    * @param _contract Token contract to add.
    */
-  function addTokenAddress(address _contract) public onlyTarget notTriggered {
+  function addTokenAddress(address _contract) public onlyTarget notTriggered onlyAlive {
     _addTokenAddress(_contract);
   }
 
@@ -141,5 +141,9 @@ contract LostKey is Checkable, SoftDestruct, ERC223Receiver {
    */
   function internalAction() internal {
     _distributeTokens();
+  }
+
+  function getTokenAddresses() public view returns (address[]) {
+    return tokenAddresses;
   }
 }
