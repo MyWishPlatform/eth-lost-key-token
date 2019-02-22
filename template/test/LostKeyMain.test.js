@@ -57,7 +57,7 @@ contract("LostKeyMain", accounts => {
 
     for (let i = 0; i < HEIRS.length; i++) {
       const heirs = await contract.percents(i);
-      heirs[0].should.be.equal(HEIRS[i]);
+      heirs[0].toLowerCase().should.be.equal(HEIRS[i].toLowerCase());
       heirs[1].should.be.bignumber.equal(PERCENTS[i]);
     }
 
@@ -76,10 +76,10 @@ contract("LostKeyMain", accounts => {
 
   it("#4 add contract addresses batch", async () => {
     const contract = await LostKey.new();
-    await contract.addTokenAddresses((await createTokensArray(10)).map(t => t.address));
+    await contract.addTokenAddresses((await createTokensArray(10)).map(t => t.address), { from: TARGET });
 
     const tokens = (await createTokensArray(5)).map(t => t.address);
-    const { logs } = await contract.addTokenAddresses(tokens);
+    const { logs } = await contract.addTokenAddresses(tokens, { from: TARGET });
 
     for (let i = 0; i < logs.length; i++) {
       const {
@@ -97,14 +97,14 @@ contract("LostKeyMain", accounts => {
   it("#5 token distribution on check", async () => {
     const tokens = await createTokensArray(2);
     const contract = await LostKey.new();
-    await contract.addTokenAddresses(tokens.map(t => t.address));
+    await contract.addTokenAddresses(tokens.map(t => t.address), { from: TARGET });
 
     const heirsCount = HEIRS_COUNT;
     const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
 
     for (let i = 0; i < tokens.length; i++) {
       await tokens[i].mint(TARGET, amount);
-      await tokens[i].approve(contract.address, amount);
+      await tokens[i].approve(contract.address, amount, { from: TARGET });
     }
 
     time.increase(PERIOD_SECONDS.add(new BN(1)));
@@ -116,7 +116,7 @@ contract("LostKeyMain", accounts => {
         const { event, args } = logs[t * heirsCount + 2 + h];
         event.should.be.equal("TokensSent");
         args.token.should.be.equal(tokens[t].address);
-        args.recipient.should.be.equal(HEIRS[h]);
+        args.recipient.toLowerCase().should.be.equal(HEIRS[h].toLowerCase());
         args.percent.should.be.bignumber.equal(PERCENTS[h]);
         args.amount.should.be.bignumber.equal(heirTokenAmount);
         (await tokens[t].balanceOf(HEIRS[h])).should.be.bignumber.equal(heirTokenAmount);
@@ -132,19 +132,21 @@ contract("LostKeyMain", accounts => {
   it("#7 cannot execute contract after kill", async () => {
     const tokens = await createTokensArray(2);
     const contract = await LostKey.new();
-    await contract.addTokenAddresses(tokens.map(t => t.address));
+    await contract.addTokenAddresses(tokens.map(t => t.address), { from: TARGET });
 
     const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
 
     for (let i = 0; i < tokens.length; i++) {
       await tokens[i].mint(TARGET, amount);
-      await tokens[i].approve(contract.address, amount);
+      await tokens[i].approve(contract.address, amount, { from: TARGET });
     }
 
-    const { logs } = await contract.kill();
+    const { logs } = await contract.kill({ from: TARGET });
     expectEvent.inLogs(logs, "Killed", { byUser: true });
 
-    await shouldFail.reverting(contract.addTokenAddresses((await createTokensArray(1)).map(t => t.address)));
+    await shouldFail.reverting(contract.addTokenAddresses((await createTokensArray(1)).map(t => t.address)), {
+      from: TARGET
+    });
     await time.increase(PERIOD_SECONDS.add(new BN(1)));
     await shouldFail.reverting(contract.check());
   });
@@ -152,13 +154,13 @@ contract("LostKeyMain", accounts => {
   it("#8 i am available", async () => {
     const tokens = await createTokensArray(2);
     const contract = await LostKey.new();
-    await contract.addTokenAddresses(tokens.map(t => t.address));
+    await contract.addTokenAddresses(tokens.map(t => t.address), { from: TARGET });
 
     const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
 
     for (let i = 0; i < tokens.length; i++) {
       await tokens[i].mint(TARGET, amount);
-      await tokens[i].approve(contract.address, amount);
+      await tokens[i].approve(contract.address, amount, { from: TARGET });
     }
 
     const { logs } = await contract.check();
@@ -167,7 +169,7 @@ contract("LostKeyMain", accounts => {
     }
 
     await time.increase(PERIOD_SECONDS.add(new BN(1)));
-    const tx = await contract.imAvailable();
+    const tx = await contract.imAvailable({ from: TARGET });
     (await contract.lastActiveTs()).should.be.bignumber.equal(await time.latest());
     expectEvent.inLogs(tx.logs, "Notified");
   });
@@ -175,13 +177,13 @@ contract("LostKeyMain", accounts => {
   it("#9 check after i am alive", async () => {
     const tokens = await createTokensArray(2);
     const contract = await LostKey.new();
-    await contract.addTokenAddresses(tokens.map(t => t.address));
+    await contract.addTokenAddresses(tokens.map(t => t.address), { from: TARGET });
 
     const amount = new BN(1000).mul(new BN(HEIRS_COUNT));
 
     for (let i = 0; i < tokens.length; i++) {
       await tokens[i].mint(TARGET, amount);
-      await tokens[i].approve(contract.address, amount);
+      await tokens[i].approve(contract.address, amount, { from: TARGET });
     }
 
     const { logs } = await contract.check();
@@ -190,7 +192,7 @@ contract("LostKeyMain", accounts => {
     }
 
     await time.increase(PERIOD_SECONDS.add(new BN(1)));
-    await contract.imAvailable();
+    await contract.imAvailable({ from: TARGET });
 
     let tx = await contract.check();
     for (let i = 0; i < tx.logs.length; i++) {
